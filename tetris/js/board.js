@@ -1,13 +1,9 @@
-import {COLORS, COLS, ROWS} from './constants.js';
+import {COLORS, COLS, HIDDEN_ROWS, ROWS} from './constants.js';
 import {BAG_MODES, Piece, PieceBag} from './piece.js';
 
 export class Board {
     constructor() {
         this.grid = this.createGrid();
-        this.bag = new PieceBag(BAG_MODES.BASIC);
-        this.currentPiece = this.bag.getPiece();
-        this.heldPiece = null;
-        this.lost = false;
     }
 
     createGrid() {
@@ -15,79 +11,6 @@ export class Board {
             // Array(COLS).fill(0)
             Array(COLS).fill({color: COLORS.BLACK, filled: false})
         );
-    }
-
-    newPiece() {
-        this.currentPiece = this.bag.getPiece();
-        if (this.collides(this.currentPiece)) {
-            this.lost = true;
-        }
-    }
-
-    move(dir) {
-        let moved = this.currentPiece.copy();
-        moved.x += dir;
-        if (!this.collides(moved)) {
-            this.currentPiece = moved;
-        }
-    }
-
-    drop() {
-        let moved = this.currentPiece.copy();
-        moved.y++;
-        if (!this.collides(moved)) {
-            this.currentPiece = moved;
-        } else {
-            this.lockPiece(this.currentPiece);
-            this.newPiece();
-            return true;
-        }
-        return false;
-    }
-
-    hardDrop() {
-        while (!this.drop());
-    }
-
-    hold() {
-        if (this.heldPiece) {
-
-        }
-        this.heldPiece = this.currentPiece;
-    }
-
-    rotateClockwise() {
-        let rotated = this.currentPiece.rotateClockwise();
-        if (!this.collides(rotated)) {
-            this.currentPiece = rotated;
-            return;
-        }
-        let x_origin = rotated.x;
-        const offsets = [+1, -1, +2, -2]
-        for (let i = 0; i < offsets.length; i++) {
-            rotated.x = x_origin + offsets[i];
-            if (!this.collides(rotated)) {
-                this.currentPiece = rotated;
-                return;
-            }
-        }
-    }
-
-    rotateCounterClockwise() {
-        let rotated = this.currentPiece.rotateCounterClockwise();
-        if (!this.collides(rotated)) {
-            this.currentPiece = rotated;
-            return;
-        }
-        let x_origin = rotated.x;
-        const offsets = [-1, +1, -2, +2]
-        for (let i = 0; i < offsets.length; i++) {
-            rotated.x = x_origin + offsets[i];
-            if (!this.collides(rotated)) {
-                this.currentPiece = rotated;
-                return;
-            }
-        }
     }
 
     collides(piece) {
@@ -123,17 +46,31 @@ export class Board {
                 }
             })
         })
-        this.clearLines();
+        let cleared = this.clearLines();
+        for (let y = 0; y < HIDDEN_ROWS; y++) {
+            let row = this.grid[y];
+            if (row.some(entry => entry.filled)) {
+                return {cleared: cleared, lost: true};
+            }
+        }
+        return {cleared: cleared, lost: false};
     }
 
     clearLines() {
+        let cleared = 0;
         for (let y = 0; y < ROWS; y++) {
             let row = this.grid[y];
             if (!row.some(entry => !entry.filled)) {
                 this.grid.splice(y, 1);
                 this.grid.unshift(Array(COLS).fill({color: COLORS.BLACK, filled: false}));
                 y--;
+                cleared++;
             }
         }
+        return cleared;
+    }
+
+    isEmpty() {
+        return !this.grid.some(row => row.some(entry => entry.filled));
     }
 }

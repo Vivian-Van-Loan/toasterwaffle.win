@@ -6,9 +6,28 @@
     <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-<!--<canvas id="hold" width="125" height="125"></canvas>-->
-<canvas id="game" width="300" height="600"></canvas>
-<canvas id="next" width="125" height="125"></canvas>
+<!-- Fullscreen overlay for click-to-start and game-over -->
+<div id="overlay">
+    <h1 id="overlay-text">Click to Start</h1>
+</div>
+
+<div class="wrapper">
+    <div class="label">HELD</div>
+    <canvas id="hold" width="150" height="150"></canvas>
+    <div class="label" id="held-label"></div>
+</div>
+<div class="wrapper">
+    <div class="label"></div>
+    <div class="label" id="score-label">SCORE: 0</div>
+    <canvas id="game" width="300" height="600"></canvas>
+    <div class="label" id="level-label">LEVEL: 0</div>
+    <div class="label" id="lines-label">LINES: 0</div>
+</div>
+<div class="wrapper">
+    <div class="label">NEXT</div>
+    <canvas id="next" width="150" height="150"></canvas>
+    <div class="label" id="next-label">NEXT: ?</div>
+</div>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
-import {COLORS, COLS, ROWS} from './constants.js';
-import {randInt, shuffleArray} from "./funcs.js";
+import {COLORS, COLS} from './constants.js';
+import {shuffleArray} from "./funcs.js";
 
 export class Piece {
     constructor(name, color, x, y, matrix) {
@@ -45,10 +45,10 @@ export class Piece {
 
 const BASIC_PIECES = [
     new Piece('I', COLORS.CYAN, 0, 0, [
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
-        [0, 1, 0, 0],
+        [0, 0, 0, 0],
+        [1, 1, 1, 1],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
     ]),
     new Piece('O', COLORS.YELLOW, 0, 0, [
         [1, 1],
@@ -72,22 +72,22 @@ const BASIC_PIECES = [
     new Piece('J', COLORS.BLUE, 0, 0, [
         [0, 1, 0],
         [0, 1, 0],
-        [1, 1, 0]
+        [1, 1, 0],
     ]),
     new Piece('L', COLORS.ORANGE, 0, 0, [
         [0, 1, 0],
         [0, 1, 0],
-        [0, 1, 1]
+        [0, 1, 1],
     ]),
 ];
 
 const PENT_PIECES = [
     new Piece('I5', COLORS.CYAN, 0, 0, [
-        [0, 0, 1, 0, 0],
-        [0, 0, 1, 0, 0],
-        [0, 0, 1, 0, 0],
-        [0, 0, 1, 0, 0],
-        [0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0],
     ]),
     new Piece('T5', COLORS.VIOLET, 0, 0, [
         [1, 1, 1],
@@ -185,36 +185,62 @@ const PENT_PIECES = [
 ];
 
 export const BAG_MODES = {
-    BASIC: 0b0000000,
-    PENT:  0b0000001,
+    BASIC: 0b0000001,
+    PENT:  0b0000010,
 }
 
 export class PieceBag {
     constructor(mode) {
-        this.PIECES = BASIC_PIECES; //in case we want extra pieces in the future, we can concat the arrays into one
+        this.PIECES = {};
+        if (mode === 0 || mode === undefined) mode = BAG_MODES.BASIC; //ensure that the bag has SOMETHING
+        if (mode & BAG_MODES.BASIC)
+            this.addPiecesToBaseBag(BASIC_PIECES);
         if (mode & BAG_MODES.PENT)
-            this.PIECES = this.PIECES.concat(PENT_PIECES);
+            this.addPiecesToBaseBag(PENT_PIECES);
+        this.bag = [];
         this.newBag();
     }
 
-    newBag() {
-        this.bag = [];
-        this.PIECES.forEach(piece => {
-            piece = piece.copy();
-            piece.x = Math.floor(COLS / 2 - piece.matrix[0].length / 2);
-            piece.y = -2;
-            this.bag.push(piece);
-        });
-        shuffleArray(this.bag);
+    addPiecesToBaseBag(pieces) { //lets us add extra piece types to the base bag
+        for (let piece of pieces) {
+            this.PIECES[piece.name] = piece;
+        }
     }
 
-    peekPiece() {
-        if (this.bag.length === 0) this.newBag();
-        return this.bag[this.bag.length - 1];
+    makePiece(name) {
+        let piece = this.PIECES[name].copy();
+        let {min_x, min_y, max_x, max_y} = piece.getExtents();
+        piece.x = Math.floor(COLS / 2 - (max_x - min_x + 1) / 2) - min_x;
+        piece.y = 0 - max_y;
+        return piece;
+    }
+
+    newBag() {
+        let new_bag = [];
+        for (let pieceName in this.PIECES) {
+            let piece = this.makePiece(pieceName);
+            new_bag.push(piece);
+        }
+        shuffleArray(new_bag);
+        this.bag = this.bag.concat(new_bag);
+    }
+
+    reconstructPiece(piece) {
+        return this.makePiece(piece.name);
+    }
+
+    peekPiece(idx) {
+        if (!idx) idx = 0;
+        while (this.bag.length < idx + 1) this.newBag();
+        return this.bag[idx];
     }
 
     getPiece() {
         if (this.bag.length === 0) this.newBag();
-        return this.bag.pop();
+        return this.bag.shift();
+    }
+
+    newPiece() {
+        return this.getPiece();
     }
 }
