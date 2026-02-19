@@ -221,8 +221,12 @@ export class Game {
         let {cleared, lost} = this.board.lockPiece(this.currentPiece);
         this.lost = this.lost || lost;
 
-        const scores = [0, 100, 300, 500, 800, 1500, 2000, 4000, 8000];
-        this.score += scores[cleared] * this.level * (this.board.isEmpty() ? 2 : 1);
+        const clearScores = [0, 100, 300, 500, 800, 1500, 2000, 4000, 8000]; //again past a certain post shouldn't even be possible
+        this.score += clearScores[cleared] * this.level * (this.board.isEmpty() ? 2 : 1);
+        const spinScores = [100, 100, 1200, 1600, 2400, 3500, 5000, 10000];
+        if (spun) {
+            this.score += spinScores[cleared] * (this.level + 1) * (this.board.isEmpty() ? 2 : 1);
+        }
 
         this.clearedLines += cleared;
         while (this.clearedLines >= LINES_PER_LEVEL) {
