@@ -23,6 +23,10 @@ export class Piece {
         return this.copy(this.matrix[0].map((val, index) => this.matrix.map(row => row[row.length - 1 - index])));
     }
 
+    rotate180() {
+        return this.copy(this.matrix.map(row => row.slice()).reverse().map(row => row.reverse()));
+    }
+
     getExtents() {
         let min_y = Infinity;
         let min_x = Infinity;
@@ -109,7 +113,7 @@ const PENT_PIECES = [
         [1, 1, 0],
         [0, 1, 1],
     ]),
-    new Piece('X', COLORS.PURPLE, 0, 0, [
+    new Piece('X', COLORS.VIOLET, 0, 0, [
         [0, 1, 0],
         [1, 1, 1],
         [0, 1, 0],

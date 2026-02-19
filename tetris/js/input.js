@@ -31,6 +31,9 @@ export class Input {
             case 'KeyX':
                 this.game.rotateClockwise();
                 break;
+            case 'KeyA':
+                this.game.rotate180();
+                break;
             case 'ArrowUp':
                 this.game.hardDrop();
                 break;

@@ -1,7 +1,7 @@
 import { Board } from './board.js';
 import { Renderer } from './renderer.js';
 import { BAG_MODES, PieceBag } from "./piece.js";
-import { FPS_60_MS, GRAVITY, LINES_PER_LEVEL } from "./constants.js";
+import {FPS_60_MS, GRAVITY, IRS_STATES, LEVEL_ON_LOCK, LINES_PER_LEVEL} from "./constants.js";
 import { audioManager } from "./audioManager.js";
 import { overlayManager } from "./overlayManager.js";
 
@@ -43,6 +43,7 @@ export class Game {
         this.areDelay = FPS_60_MS * 10; //60 fps equiv frames worth of time to lock piece
         this.areCounter = 0;
         this.inARE = false;
+        this.irs = IRS_STATES.DEFAULT;
 
         this.board = new Board();
         this.bag = new PieceBag(BAG_MODES.BASIC);
@@ -53,6 +54,7 @@ export class Game {
         this.level = 1;
         this.score = 0;
         this.clearedLines = 0;
+        this.totalClearedLines = 0;
     }
 
     loop(time = 0) {
@@ -118,7 +120,12 @@ export class Game {
     }
 
     newPiece() {
-        this.currentPiece = this.bag.newPiece(this.board);
+        this.currentPiece = this.bag.newPiece();
+        if (this.irs === IRS_STATES.CLOCKWISE) this.currentPiece = this.currentPiece.rotateClockwise();
+        if (this.irs === IRS_STATES.COUNTERCLOCKWISE) this.currentPiece = this.currentPiece.rotateCounterClockwise();
+        if (this.irs === IRS_STATES.FLIP) this.currentPiece = this.currentPiece.rotate180();
+
+        this.irs = IRS_STATES.DEFAULT;
         this.holdSwapped = false;
         this.getGhost();
 
@@ -154,14 +161,59 @@ export class Game {
     }
 
     rotateClockwise() {
+        if (this.inARE) {
+            if (this.irs === IRS_STATES.DEFAULT) {
+                this.irs = IRS_STATES.CLOCKWISE;
+            } else if (this.irs === IRS_STATES.CLOCKWISE) {
+                this.irs = IRS_STATES.FLIP;
+            } else if (this.irs === IRS_STATES.FLIP) {
+                this.irs = IRS_STATES.COUNTERCLOCKWISE;
+            } else if (this.irs === IRS_STATES.COUNTERCLOCKWISE) {
+                this.irs = IRS_STATES.DEFAULT;
+            }
+            return;
+        }
+
         let rotated = this.currentPiece.rotateClockwise();
         const offsets = [[0, 0], [+1, 0], [0, +1], [-1, 0], [0, -1], [+1, +1], [+1, -1], [-1, +1], [-1, -1], [+2, 0], [-2, 0], [0, +2], [0, -2]];
         this.rotateCheck(rotated, offsets);
     }
 
     rotateCounterClockwise() {
+        if (this.inARE) {
+            if (this.irs === IRS_STATES.DEFAULT) {
+                this.irs = IRS_STATES.COUNTERCLOCKWISE;
+            } else if (this.irs === IRS_STATES.COUNTERCLOCKWISE) {
+                this.irs = IRS_STATES.FLIP;
+            } else if (this.irs === IRS_STATES.FLIP) {
+                this.irs = IRS_STATES.CLOCKWISE;
+            } else if (this.irs === IRS_STATES.CLOCKWISE) {
+                this.irs = IRS_STATES.DEFAULT;
+            }
+            return;
+        }
+
         let rotated = this.currentPiece.rotateCounterClockwise();
         const offsets = [[0, 0], [-1, 0], [0, -1], [+1, 0], [0, +1], [-1, -1], [-1, +1], [+1, -1], [+1, +1], [-2, 0], [0, -2], [+2, 0], [0, +2]];
+        this.rotateCheck(rotated, offsets);
+    }
+
+    rotate180() {
+        if (this.inARE) {
+            if (this.irs === IRS_STATES.DEFAULT) {
+                this.irs = IRS_STATES.FLIP;
+            } else if (this.irs === IRS_STATES.FLIP) {
+                this.irs = IRS_STATES.DEFAULT;
+            } else if (this.irs === IRS_STATES.CLOCKWISE) {
+                this.irs = IRS_STATES.COUNTERCLOCKWISE;
+            } else if (this.irs === IRS_STATES.COUNTERCLOCKWISE) {
+                this.irs = IRS_STATES.CLOCKWISE;
+            }
+            return;
+        }
+
+        let rotated = this.currentPiece.rotate180();
+        const offsets = [[0, 0], [0, -1], [0, +1], [-1, 0], [+1, 0], [-1, -1], [+1, -1], [-1, +1], [+1, +1], [0, -2], [0, +2], [-2, 0], [+2, 0]];
         this.rotateCheck(rotated, offsets);
     }
 
@@ -228,7 +280,12 @@ export class Game {
             this.score += spinScores[cleared] * (this.level + 1) * (this.board.isEmpty() ? 2 : 1);
         }
 
+        if (LEVEL_ON_LOCK) {
+            this.level++; //notably, this doesn't play the level up sound, GOOD
+        }
+
         this.clearedLines += cleared;
+        this.totalClearedLines += cleared;
         while (this.clearedLines >= LINES_PER_LEVEL) {
             this.clearedLines -= LINES_PER_LEVEL;
             this.level++;
@@ -269,7 +326,7 @@ export class Game {
     }
 
     hold() {
-        if (this.holdSwapped)
+        if (this.holdSwapped || this.inARE)
             return;
         this.holdSwapped = true;
         let cur = this.bag.reconstructPiece(this.currentPiece);

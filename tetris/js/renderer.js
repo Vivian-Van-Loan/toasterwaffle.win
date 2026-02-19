@@ -49,7 +49,7 @@ export class Renderer {
 
         scoreLabel.innerText = "SCORE: " + this.game.score.toString();
         levelLabel.innerText = "LEVEL: " + this.game.level.toString();
-        linesLabel.innerText = "LINES: " + ((this.game.level - 1) * LINES_PER_LEVEL + this.game.clearedLines).toString();
+        linesLabel.innerText = "LINES: " + this.game.totalClearedLines.toString();
         heldLabel.innerText = (this.game.heldPiece ? "HELD: " + this.game.heldPiece.name : "");
         nextLabel.innerText = "NEXT: " + this.game.bag.peekPiece(0).name;
     }
