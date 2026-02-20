@@ -8,7 +8,58 @@
 <body>
 <!-- Fullscreen overlay for click-to-start and game-over -->
 <div id="overlay">
-    <h1 id="overlay-text">Click to Start</h1>
+    <div id="settings-panel">
+        <h1>TETRIS</h1>
+
+        <label>
+            Preset
+            <select id="setting-preset-select"></select>
+        </label>
+
+        <label>
+            Game Mode
+            <select id="setting-game-mode">
+                <option value="marathon">Marathon</option>
+                <option value="sprint">Sprint</option>
+                <option value="ultra">Ultra</option>
+            </select>
+        </label>
+
+        <label>
+            Gravity Table
+            <select id="setting-gravity-table">
+                <option value="standard">Standard</option>
+                <option value="tgm">TGM2 Like</option>
+            </select>
+        </label>
+
+        <label>
+            Starting Level
+            <input id="setting-starting-level" type="number" min="1" value="1">
+        </label>
+
+        <label>
+            Lines to Level Up
+            <input id="setting-lines-per-level" type="number" min="1" value="10">
+        </label>
+
+        <label class="checkbox">
+            <input id="setting-allow-hold" type="checkbox" checked>
+            Allow Holds
+        </label>
+
+        <label class="checkbox">
+            <input id="setting-allow-180" type="checkbox" checked>
+            Allow 180° Rotation
+        </label>
+
+        <label class="checkbox">
+            <input id="setting-level-on-lock" type="checkbox">
+            Level Up on Piece Lock
+        </label>
+
+        <button id="start-button">Click to Start</button>
+    </div>
 </div>
 
 <div class="wrapper">

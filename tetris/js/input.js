@@ -40,6 +40,9 @@ export class Input {
             case 'Space':
                 this.game.hold();
                 break;
+            case 'KeyP':
+                this.game.togglePause();
+                break;
         }
     }
 

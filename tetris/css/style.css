@@ -16,24 +16,6 @@ canvas {
     border: 2px solid #444;
 }
 
-#overlay {
-    position: fixed;
-    inset: 0; /* top:0; right:0; bottom:0; left:0 */
-    background: rgba(0, 0, 0, 0.9); /* semi-dark for clarity */
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: sans-serif;
-    font-size: 2rem;
-    text-align: center;
-    cursor: pointer;
-    z-index: 999;
-}
-
-#overlay.hidden {
-    display: none;
-}
 
 .wrapper {
     display: flex;
@@ -52,3 +34,56 @@ canvas {
 .wrapper > canvas {
     align-self: center;
 }
+
+#overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    font-family: sans-serif;
+}
+
+#overlay.hidden {
+    display: none;
+}
+
+#settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: #111;
+    padding: 2rem 3rem;
+    border-radius: 8px;
+    min-width: 280px;
+    text-align: center;
+}
+
+#settings-panel label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+#settings-panel label.checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#settings-panel select,
+#settings-panel input {
+    margin-top: 0.25rem;
+}
+
+#start-button {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    font-size: 1rem;
+    cursor: pointer;
+}
+

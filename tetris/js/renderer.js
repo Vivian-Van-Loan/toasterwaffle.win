@@ -37,6 +37,14 @@ export class Renderer {
             this.drawPiece(this.game.currentPiece);
             this.drawPiece(this.game.ghostPiece, true);
         }
+        if (this.game.paused) {
+            this.gameCtx.fillStyle = COLORS.WHITE;
+            this.gameCtx.fillRect(0, 0, gameWidth, gameHeight);
+            this.gameCtx.fillStyle = COLORS.BLACK;
+            this.gameCtx.font = "bold 32px sans-serif";
+            this.gameCtx.textAlign = "center";
+            this.gameCtx.fillText("PAUSED", gameWidth / 2, gameHeight / 2);
+        }
 
         this.nextCtx.fillStyle = COLORS.BLACK;
         this.nextCtx.clearRect(0, 0, nextWidth, nextHeight);

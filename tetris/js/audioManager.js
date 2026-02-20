@@ -3,6 +3,7 @@ class AudioManager {
         this.ctx = null;
         this.buffers = {};
         this.unlocked = false;
+        this.loaded = false;
 
         this.SOUNDS = {
             move: 'sounds/move.wav',
@@ -31,11 +32,14 @@ class AudioManager {
 
     /* ---------- async work happens later ---------- */
     async preload() {
+        if (this.loaded)
+            return;
         for (const [name, url] of Object.entries(this.SOUNDS)) {
             const res = await fetch(url);
             const data = await res.arrayBuffer();
             this.buffers[name] = await this.ctx.decodeAudioData(data);
         }
+        this.loaded = true;
     }
 
     playBuffer(name, volume = 1.0) {

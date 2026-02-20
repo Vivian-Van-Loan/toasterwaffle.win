@@ -1,34 +1,36 @@
 import { Board } from './board.js';
 import { Renderer } from './renderer.js';
 import { BAG_MODES, PieceBag } from "./piece.js";
-import {FPS_60_MS, GRAVITY, IRS_STATES, LEVEL_ON_LOCK, LINES_PER_LEVEL} from "./constants.js";
+import { FPS_60_MS, IRS_STATES} from "./constants.js";
 import { audioManager } from "./audioManager.js";
-import { overlayManager } from "./overlayManager.js";
+import { DEFAULT_SETTINGS, overlayManager } from "./settings.js";
 
 export class Game {
     constructor() {
+        this.settings = DEFAULT_SETTINGS;
         this.renderer = new Renderer(this);
         this.started = false;
         this.paused = true;
-        this.reset();
     }
 
     setInputHandler(handler) {
         this.input = handler;
     }
 
-    start() {
-        this.reset();
+    start(settings) {
+        this.reset(settings);
         this.started = true;
         this.paused = false;
         requestAnimationFrame(this.loop.bind(this));
     }
 
-    pause() {
-        this.paused = true;
+    togglePause() {
+        this.paused = !this.paused;
     }
 
-    reset() {
+    reset(settings) {
+        this.settings = settings;
+
         this.lastTime = performance.now();
         this.dropInterval = FPS_60_MS;
         this.dropTimer = 0;
@@ -51,7 +53,7 @@ export class Game {
         this.heldPiece = null;
         this.lost = false;
         this.holdSwapped = false;
-        this.level = 1;
+        this.level = this.settings.startingLevel;
         this.score = 0;
         this.clearedLines = 0;
         this.totalClearedLines = 0;
@@ -59,6 +61,7 @@ export class Game {
 
     loop(time = 0) {
         if (this.paused) {
+            this.renderer.draw();
             this.lastTime = time; //cancel all time accumulations
             requestAnimationFrame(this.loop.bind(this));
             return;
@@ -86,9 +89,9 @@ export class Game {
             while (this.dropTimer >= this.dropInterval) {
                 this.dropTimer -= this.dropInterval;
                 timerExpired = true;
-                for (let level in GRAVITY) {
+                for (let level in this.settings.gravityTable) {
                     if (this.level >= level) {
-                        let gravity = GRAVITY[level];
+                        let gravity = this.settings.gravityTable[level];
                         this.gravityTracker += gravity;
                     }
                 }
@@ -138,6 +141,7 @@ export class Game {
 
 
     move(dir) {
+        if (this.paused || this.inARE) return;
         let moved = this.currentPiece.copy();
         moved.x += dir;
         if (!this.board.collides(moved)) {
@@ -161,6 +165,7 @@ export class Game {
     }
 
     rotateClockwise() {
+        if (this.paused) return;
         if (this.inARE) {
             if (this.irs === IRS_STATES.DEFAULT) {
                 this.irs = IRS_STATES.CLOCKWISE;
@@ -180,6 +185,7 @@ export class Game {
     }
 
     rotateCounterClockwise() {
+        if (this.paused) return;
         if (this.inARE) {
             if (this.irs === IRS_STATES.DEFAULT) {
                 this.irs = IRS_STATES.COUNTERCLOCKWISE;
@@ -199,6 +205,8 @@ export class Game {
     }
 
     rotate180() {
+        if (!this.settings.allow180 || this.paused)
+            return;
         if (this.inARE) {
             if (this.irs === IRS_STATES.DEFAULT) {
                 this.irs = IRS_STATES.FLIP;
@@ -218,6 +226,7 @@ export class Game {
     }
 
     tryDrop() {
+        if (this.paused) return;
         let moved = this.currentPiece.copy();
         moved.y++;
 
@@ -280,14 +289,14 @@ export class Game {
             this.score += spinScores[cleared] * (this.level + 1) * (this.board.isEmpty() ? 2 : 1);
         }
 
-        if (LEVEL_ON_LOCK) {
+        if (this.settings.levelOnLock) {
             this.level++; //notably, this doesn't play the level up sound, GOOD
         }
 
         this.clearedLines += cleared;
         this.totalClearedLines += cleared;
-        while (this.clearedLines >= LINES_PER_LEVEL) {
-            this.clearedLines -= LINES_PER_LEVEL;
+        while (this.clearedLines >= this.settings.linesPerLevel) {
+            this.clearedLines -= this.settings.linesPerLevel;
             this.level++;
             audioManager.levelUp();
         }
@@ -306,7 +315,7 @@ export class Game {
     }
 
     hardDrop() {
-        if (this.inARE) {
+        if (this.inARE || this.paused) {
             return;
         }
         while (!this.tryDrop());
@@ -326,7 +335,7 @@ export class Game {
     }
 
     hold() {
-        if (this.holdSwapped || this.inARE)
+        if (this.holdSwapped || this.inARE || this.paused || !this.settings.allowHold)
             return;
         this.holdSwapped = true;
         let cur = this.bag.reconstructPiece(this.currentPiece);
