@@ -1,4 +1,5 @@
-import {BLOCK_SIZE, COLORS, HIDDEN_ROWS, LINES_PER_LEVEL} from './constants.js';
+import {BLOCK_SIZE, COLORS, FPS_60_MS, HIDDEN_ROWS, SPRINT_LINES, ULTRA_FRAMES_60} from './constants.js';
+import {GAME_MODES} from "./settings.js";
 
 const gameCanvas = document.getElementById('game');
 const gameCavnasCtx = gameCanvas.getContext('2d');
@@ -15,11 +16,14 @@ const holdCavnasCtx = holdCanvas.getContext('2d');
 const holdWidth = holdCanvas.width;
 const holdHeight = holdCanvas.height;
 
-const scoreLabel = document.getElementById('score-label');
-const levelLabel = document.getElementById('level-label');
-const linesLabel = document.getElementById('lines-label');
-const heldLabel = document.getElementById('held-label');
-const nextLabel = document.getElementById('next-label');
+const scoreLabels = [document.getElementById('score-label'), document.getElementById('score-num-label')];
+const highScoreLabels = [document.getElementById('high-score-label'), document.getElementById('high-score-num-label')];
+const levelLabels = [document.getElementById('level-label'), document.getElementById('level-num-label')];
+const remainingLabels = [document.getElementById('remaining-label'), document.getElementById('remaining-num-label')];
+const linesLabels = [document.getElementById('lines-label'), document.getElementById('lines-num-label')];
+
+const heldLabel =  document.getElementById('held-label');
+const nextLabel =  document.getElementById('next-label');
 
 export class Renderer {
     constructor(game) {
@@ -55,12 +59,7 @@ export class Renderer {
         if (this.game.heldPiece)
             this.drawExtraPiece(this.game.heldPiece, this.holdCtx, holdWidth, holdHeight);
 
-        scoreLabel.innerText = this.game.score.toString();
-        levelLabel.innerText = this.game.level.toString();
-        linesLabel.innerText = this.game.totalClearedLines.toString();
-
-        heldLabel.innerText = (this.game.heldPiece ? this.game.heldPiece.name : "");
-        nextLabel.innerText = this.game.bag.peekPiece(0).name;
+        this.updateHUD();
     }
 
     drawMatrix(matrix) {
@@ -120,5 +119,55 @@ export class Renderer {
             })
         })
         if (transparent) canvas.globalAlpha = 1;
+    }
+
+    presetHUD() {
+        if (this.game.settings.gameMode === GAME_MODES.MARATHON) {
+            scoreLabels[0].innerText = "SCORE";
+            highScoreLabels[0].innerText = "HIGH SCORE";
+            levelLabels[0].innerText = "LEVEL";
+            remainingLabels[0].innerText = " ";
+            remainingLabels[1].innerText = " ";
+            linesLabels[0].innerText = "LINES";
+        } else if (this.game.settings.gameMode === GAME_MODES.SPRINT) {
+            scoreLabels[0].innerText = "TIME";
+            highScoreLabels[0].innerText = "BEST TIME";
+            levelLabels[0].innerText = "LEVEL";
+            remainingLabels[0].innerText = "REMAINING";
+            linesLabels[0].innerText = "LINES";
+        } else if (this.game.settings.gameMode === GAME_MODES.ULTRA) {
+            scoreLabels[0].innerText = "SCORE";
+            highScoreLabels[0].innerText = "HIGH SCORE";
+            levelLabels[0].innerText = "LEVEL";
+            remainingLabels[0].innerText = "REMAINING";
+        }
+    }
+
+    updateHUD() {
+        if (this.game.settings.gameMode === GAME_MODES.MARATHON) {
+            scoreLabels[1].innerText = this.game.score.toString();
+            // highScoreLabels[1].innerText = this.game.score.toString(); //todo FIGURE OUT HIGH SCORES
+            levelLabels[1].innerText = this.game.level.toString();
+            linesLabels[1].innerText = this.game.totalClearedLines.toString();
+        } else if (this.game.settings.gameMode === GAME_MODES.SPRINT) {
+            scoreLabels[1].innerText = Renderer.formatTime(this.game.frameCount60);
+            // highScoreLabels[1].innerText = Renderer.formatTime(this.game.frameCount60); //todo: also figure out high scores
+            levelLabels[1].innerText = this.game.level.toString();
+            remainingLabels[1].innerText = (SPRINT_LINES - this.game.totalClearedLines).toString();
+            linesLabels[1].innerText = this.game.totalClearedLines.toString();
+        } else if (this.game.settings.gameMode === GAME_MODES.ULTRA) {
+            scoreLabels[1].innerText = this.game.score.toString();
+            // highScoreLabels[1].innerText = this.game.score.toString(); //todo ditto
+            levelLabels[1].innerText = this.game.level.toString();
+            remainingLabels[1].innerText = Renderer.formatTime(ULTRA_FRAMES_60 - this.game.frameCount60);
+            linesLabels[1].innerText = this.game.totalClearedLines.toString();
+        }
+
+        heldLabel.innerText = (this.game.heldPiece ? this.game.heldPiece.name : "");
+        nextLabel.innerText = this.game.bag.peekPiece(0).name;
+    }
+
+    static formatTime(frames) {
+        return (frames * FPS_60_MS / 1000).toFixed(4); //todo: improve via seconds and minutes
     }
 }

@@ -52,6 +52,11 @@ canvas {
     float: right;
 }
 
+.middle {
+    text-align: center;
+    float: none;
+}
+
 .wrapper > canvas {
     align-self: center;
 }

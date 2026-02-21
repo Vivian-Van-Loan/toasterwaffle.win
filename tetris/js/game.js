@@ -1,9 +1,9 @@
 import { Board } from './board.js';
 import { Renderer } from './renderer.js';
 import { BAG_MODES, PieceBag } from "./piece.js";
-import { FPS_60_MS, IRS_STATES} from "./constants.js";
+import {FPS_60_MS, IRS_STATES, SPRINT_LINES, ULTRA_FRAMES_60} from "./constants.js";
 import { audioManager } from "./audioManager.js";
-import { DEFAULT_SETTINGS, overlayManager } from "./settings.js";
+import {DEFAULT_SETTINGS, GAME_MODES, overlayManager} from "./settings.js";
 
 export class Game {
     constructor() {
@@ -32,8 +32,9 @@ export class Game {
         this.settings = settings;
 
         this.lastTime = performance.now();
-        this.dropInterval = FPS_60_MS;
-        this.dropTimer = 0;
+        this.frameCount60 = 0;
+        this.updateInterval = FPS_60_MS;
+        this.updateTimer = 0;
         this.gravityTracker = 0;
 
         this.lockDelay = FPS_60_MS * 30; //60 fps equiv frames worth of time to lock piece
@@ -48,15 +49,18 @@ export class Game {
         this.irs = IRS_STATES.DEFAULT;
 
         this.board = new Board();
-        this.bag = new PieceBag(BAG_MODES.BASIC);
+        this.bag = new PieceBag(this.settings.pieces);
         this.newPiece();
         this.heldPiece = null;
         this.lost = false;
+        this.won = false;
         this.holdSwapped = false;
         this.level = this.settings.startingLevel;
         this.score = 0;
         this.clearedLines = 0;
         this.totalClearedLines = 0;
+
+        this.renderer.presetHUD();
     }
 
     loop(time = 0) {
@@ -67,7 +71,7 @@ export class Game {
             return;
         }
 
-        if (this.lost) {
+        if (this.lost || this.won) {
             this.renderer.draw(); //show final frame
             if (overlayManager.game === this) {
                 overlayManager.showGameOver();
@@ -83,12 +87,11 @@ export class Game {
             this.input.update(delta);
         }
 
-        this.dropTimer += delta;
-        if (!this.inARE) {
-            let timerExpired = false;
-            while (this.dropTimer >= this.dropInterval) {
-                this.dropTimer -= this.dropInterval;
-                timerExpired = true;
+        this.updateTimer += delta;
+        while (this.updateTimer >= this.updateInterval) {
+            this.frameCount60++;
+            this.updateTimer -= this.updateInterval;
+            if (!this.inARE) {
                 for (let level in this.settings.gravityTable) {
                     if (this.level >= level) {
                         let gravity = this.settings.gravityTable[level];
@@ -96,9 +99,11 @@ export class Game {
                     }
                 }
             }
-            if (timerExpired) {
-                this.dropTimer = 0; //reset it so we aren't getting annoying overflow
+            if (this.settings.gameMode === GAME_MODES.ULTRA && this.frameCount60 >= ULTRA_FRAMES_60) {
+                this.won = true;
             }
+        }
+        if (!this.inARE) {
             while (this.gravityTracker >= 256) {
                 this.gravityTracker -= 256;
                 this.tryDrop();
@@ -290,7 +295,9 @@ export class Game {
         }
 
         if (this.settings.levelOnLock) {
-            this.level++; //notably, this doesn't play the level up sound, GOOD
+            if (this.level % 100 !== 99) {
+                this.level++; //notably, this doesn't play the level up sound, GOOD
+            }
         }
 
         this.clearedLines += cleared;
@@ -299,6 +306,9 @@ export class Game {
             this.clearedLines -= this.settings.linesPerLevel;
             this.level++;
             audioManager.levelUp();
+        }
+        if (this.settings.gameMode === GAME_MODES.SPRINT && this.totalClearedLines >= SPRINT_LINES) {
+            this.won = true;
         }
 
         this.inARE = true;

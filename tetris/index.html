@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-<!-- Fullscreen overlay for click-to-start and game-over -->
+<!-- Fullscreen overlay for settings and click to start -->
 <div id="overlay">
     <div id="settings-panel">
         <h1>TETRIS</h1>
@@ -58,6 +58,14 @@
             Level Up on Piece Lock
         </label>
 
+        <label class="checkbox">
+            Pieces:
+            <input id="setting-piece-basic" type="checkbox" checked>
+            Tetrominoes
+            <input id="setting-piece-pent" type="checkbox">
+            Pentominos
+        </label>
+
         <button id="start-button">Click to Start</button>
     </div>
 </div>
@@ -69,23 +77,25 @@
 </div>
 <div class="wrapper">
     <div class="label split">
-        <div class="left">SCORE</div>
-        <div class="right">HIGH SCORE</div>
+        <div class="left" id="score-label">SCORE</div>
+        <div class="right" id="high-score-label">HIGH SCORE</div>
     </div>
     <div class="label split">
-        <div class="left" id="score-label">0</div>
-        <div class="right" id="high-score-label">0</div>
+        <div class="left" id="score-num-label">0</div>
+        <div class="right" id="high-score-num-label">0</div>
     </div>
 
     <canvas id="game" width="300" height="600"></canvas>
 
     <div class="label split">
-        <div class="left">LEVEL</div>
-        <div class="right">LINES</div>
+        <div class="left" id="level-label">LEVEL</div>
+        <div class="middle" id="remaining-label">REMAINING</div>
+        <div class="right" id="lines-label">LINES</div>
     </div>
     <div class="label split">
-        <div class="left" id="level-label">0</div>
-        <div class="right" id="lines-label">0</div>
+        <div class="left" id="level-num-label">0</div>
+        <div class="middle" id="remaining-num-label">0</div>
+        <div class="right" id="lines-num-label">0</div>
     </div>
 </div>
 <div class="wrapper">

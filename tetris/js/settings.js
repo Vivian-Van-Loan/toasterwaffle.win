@@ -1,5 +1,6 @@
 import { audioManager } from "./audioManager.js";
 import { STANDARD_GRAVITY, TGM_LIKE_GRAVITY } from "./gravity.js";
+import { BAG_MODES } from "./piece.js";
 
 const overlay = document.getElementById('overlay');
 const startButton = document.getElementById('start-button');
@@ -30,7 +31,8 @@ export class SettingsManager {
         allowHold = true,
         allow180 = true,
         linesPerLevel = 10,
-        levelOnLock = false
+        levelOnLock = false,
+        pieces = BAG_MODES.BASIC,
     ) {
         this.gameMode = gameMode;
         this.clearMode = clearMode;
@@ -40,6 +42,7 @@ export class SettingsManager {
         this.allow180 = allow180;
         this.linesPerLevel = linesPerLevel;
         this.levelOnLock = levelOnLock;
+        this.pieces = pieces;
     }
 
     static readFromUI() {
@@ -59,7 +62,13 @@ export class SettingsManager {
         let hold = document.getElementById('setting-allow-hold').checked;
         let rotate = document.getElementById('setting-allow-180').checked;
         let levelOnLock = document.getElementById('setting-level-on-lock').checked;
-        return new SettingsManager(mode, CLEAR_MODES.GUIDELINE, gravity, level, hold, rotate, lines, levelOnLock);
+
+        let pieces = 0;
+        if (document.getElementById('setting-piece-basic').checked) pieces |= BAG_MODES.BASIC;
+        if (document.getElementById('setting-piece-pent').checked) pieces |= BAG_MODES.PENT;
+        if (pieces === 0) pieces = BAG_MODES.BASIC;
+
+        return new SettingsManager(mode, CLEAR_MODES.GUIDELINE, gravity, level, hold, rotate, lines, levelOnLock, pieces);
     }
 
     writeToUI() {
@@ -79,6 +88,9 @@ export class SettingsManager {
         document.getElementById('setting-allow-hold').checked = this.allowHold;
         document.getElementById('setting-allow-180').checked = this.allow180;
         document.getElementById('setting-level-on-lock').checked = this.levelOnLock;
+
+        document.getElementById('setting-piece-basic').checked = (this.pieces & BAG_MODES.BASIC) !== 0;
+        document.getElementById('setting-piece-pent').checked = (this.pieces & BAG_MODES.PENT) !== 0;
     }
 }
 
@@ -91,7 +103,8 @@ export const TGM_LIKE_SETTINGS = new SettingsManager(
     true,
     true,
     1,
-    true
+    true,
+    BAG_MODES.BASIC,
 );
 // export const CUSTOM_SETTINGS = loadSettings(DEFAULT_SETTINGS);
 

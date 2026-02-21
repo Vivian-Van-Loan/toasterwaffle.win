@@ -2,9 +2,8 @@ export const COLS = 10;
 export const ROWS = 21;
 export const HIDDEN_ROWS = 1;
 
-// export const LINES_PER_LEVEL = 5; //usually 10 but that's slow
-export const LINES_PER_LEVEL = 1; //TGM style
-export const LEVEL_ON_LOCK = true; //also TGM style
+export const SPRINT_LINES = 40;
+export const ULTRA_FRAMES_60 = 3 * 60 * 60; //3 minutes with 60 seconds at 60 frames per second
 
 export const BLOCK_SIZE = 30;
 
