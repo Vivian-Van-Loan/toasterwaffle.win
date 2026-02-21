@@ -68,11 +68,25 @@
     <div class="label" id="held-label"></div>
 </div>
 <div class="wrapper">
-    <div class="label"></div>
-    <div class="label" id="score-label">SCORE: 0</div>
+    <div class="label split">
+        <div class="left">SCORE</div>
+        <div class="right">HIGH SCORE</div>
+    </div>
+    <div class="label split">
+        <div class="left" id="score-label">0</div>
+        <div class="right" id="high-score-label">0</div>
+    </div>
+
     <canvas id="game" width="300" height="600"></canvas>
-    <div class="label" id="level-label">LEVEL: 0</div>
-    <div class="label" id="lines-label">LINES: 0</div>
+
+    <div class="label split">
+        <div class="left">LEVEL</div>
+        <div class="right">LINES</div>
+    </div>
+    <div class="label split">
+        <div class="left" id="level-label">0</div>
+        <div class="right" id="lines-label">0</div>
+    </div>
 </div>
 <div class="wrapper">
     <div class="label">NEXT</div>

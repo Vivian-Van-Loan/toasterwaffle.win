@@ -55,11 +55,12 @@ export class Renderer {
         if (this.game.heldPiece)
             this.drawExtraPiece(this.game.heldPiece, this.holdCtx, holdWidth, holdHeight);
 
-        scoreLabel.innerText = "SCORE: " + this.game.score.toString();
-        levelLabel.innerText = "LEVEL: " + this.game.level.toString();
-        linesLabel.innerText = "LINES: " + this.game.totalClearedLines.toString();
-        heldLabel.innerText = (this.game.heldPiece ? "HELD: " + this.game.heldPiece.name : "");
-        nextLabel.innerText = "NEXT: " + this.game.bag.peekPiece(0).name;
+        scoreLabel.innerText = this.game.score.toString();
+        levelLabel.innerText = this.game.level.toString();
+        linesLabel.innerText = this.game.totalClearedLines.toString();
+
+        heldLabel.innerText = (this.game.heldPiece ? this.game.heldPiece.name : "");
+        nextLabel.innerText = this.game.bag.peekPiece(0).name;
     }
 
     drawMatrix(matrix) {

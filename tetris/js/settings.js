@@ -93,6 +93,7 @@ export const TGM_LIKE_SETTINGS = new SettingsManager(
     1,
     true
 );
+// export const CUSTOM_SETTINGS = loadSettings(DEFAULT_SETTINGS);
 
 export const SETTINGS_PRESETS = {
     "Standard": DEFAULT_SETTINGS,
@@ -146,3 +147,26 @@ presetSelect.addEventListener('change', () => {
     const settings = SETTINGS_PRESETS[presetName];
     settings.writeToUI();
 });
+
+// const STORAGE_KEYS = {
+//     SETTINGS: 'tetris.settings.v1',
+//     BEST_SCORE: 'tetris.bestScore.v1',
+// };
+//
+// export function saveSettings() {
+//     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(DEFAULT_SETTINGS));
+// }
+//
+// export function loadSettings(defaultSettings) {
+//     const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+//     if (!raw) return structuredClone(defaultSettings);
+//
+//     try {
+//         return {
+//             ...structuredClone(defaultSettings),
+//             ...JSON.parse(raw),
+//         };
+//     } catch {
+//         return structuredClone(defaultSettings);
+//     }
+// }
