@@ -25,7 +25,7 @@ export const STANDARD_GRAVITY = { //Courtesy of ChatGPT
     23: 5120,  // 20G (instant drop)
 };
 
-export const TGM_LIKE_GRAVITY = { //Like TGM but not, it's worse and weird, oh and do have fun
+export const TGM2_LIKE_GRAVITY = { //Like TGM but not, it's worse and weird, oh and do have fun
     1: 4,
     30: 6,
     35: 8,

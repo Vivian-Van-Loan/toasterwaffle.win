@@ -1,9 +1,10 @@
 import { Board } from './board.js';
 import { Renderer } from './renderer.js';
-import { BAG_MODES, PieceBag } from "./piece.js";
+import { PieceBag } from "./piece.js";
 import {FPS_60_MS, IRS_STATES, SPRINT_LINES, ULTRA_FRAMES_60} from "./constants.js";
 import { audioManager } from "./audioManager.js";
-import {DEFAULT_SETTINGS, GAME_MODES, overlayManager} from "./settings.js";
+import {DEFAULT_SETTINGS, GAME_MODE_IS_INFINITE, GAME_MODES, overlayManager} from "./settings.js";
+import {saveStats} from "./scores.js";
 
 export class Game {
     constructor() {
@@ -100,7 +101,7 @@ export class Game {
                 }
             }
             if (this.settings.gameMode === GAME_MODES.ULTRA && this.frameCount60 >= ULTRA_FRAMES_60) {
-                this.won = true;
+                this.setOver(false);
             }
         }
         if (!this.inARE) {
@@ -143,7 +144,6 @@ export class Game {
         //Grounding state is derived from the piece's position
         this.touchingGround = this.isGrounded();
     }
-
 
     move(dir) {
         if (this.paused || this.inARE) return;
@@ -285,7 +285,9 @@ export class Game {
     lockPiece() {
         let spun = this.checkSpun();
         let {cleared, lost} = this.board.lockPiece(this.currentPiece);
-        this.lost = this.lost || lost;
+        if (this.lost || lost) {
+            this.setOver(true);
+        }
 
         const clearScores = [0, 100, 300, 500, 800, 1500, 2000, 4000, 8000]; //again past a certain post shouldn't even be possible
         this.score += clearScores[cleared] * this.level * (this.board.isEmpty() ? 2 : 1);
@@ -308,7 +310,7 @@ export class Game {
             audioManager.levelUp();
         }
         if (this.settings.gameMode === GAME_MODES.SPRINT && this.totalClearedLines >= SPRINT_LINES) {
-            this.won = true;
+            this.setOver(false);
         }
 
         this.inARE = true;
@@ -328,7 +330,7 @@ export class Game {
         if (this.inARE || this.paused) {
             return;
         }
-        while (!this.tryDrop());
+        while (!this.tryDrop()) {} //nothing loop
         this.lockPiece();
     }
 
@@ -358,5 +360,17 @@ export class Game {
         this.heldPiece = cur;
         this.getGhost();
         audioManager.hold();
+    }
+
+    setOver(lost) {
+        if (lost) {
+            this.lost = true;
+            if (GAME_MODE_IS_INFINITE[this.settings.gameMode]) {
+                saveStats(this.settings, {score: this.score, time: this.frameCount60, level: this.level, lines: this.totalClearedLines});
+            }
+        } else {
+            this.won = true;
+            saveStats(this.settings, {score: this.score, time: this.frameCount60, level: this.level, lines: this.totalClearedLines});
+        }
     }
 }

@@ -1,5 +1,6 @@
 import {BLOCK_SIZE, COLORS, FPS_60_MS, HIDDEN_ROWS, SPRINT_LINES, ULTRA_FRAMES_60} from './constants.js';
 import {GAME_MODES} from "./settings.js";
+import {loadStats} from "./scores.js";
 
 const gameCanvas = document.getElementById('game');
 const gameCavnasCtx = gameCanvas.getContext('2d');
@@ -31,6 +32,8 @@ export class Renderer {
         this.nextCtx = nextCavnasCtx;
         this.holdCtx = holdCavnasCtx;
         this.game = game;
+
+        this.highScores = {};
     }
 
     draw() {
@@ -122,6 +125,8 @@ export class Renderer {
     }
 
     presetHUD() {
+        this.highScores = loadStats(this.game.settings);
+
         if (this.game.settings.gameMode === GAME_MODES.MARATHON) {
             scoreLabels[0].innerText = "SCORE";
             highScoreLabels[0].innerText = "HIGH SCORE";
@@ -146,20 +151,27 @@ export class Renderer {
     updateHUD() {
         if (this.game.settings.gameMode === GAME_MODES.MARATHON) {
             scoreLabels[1].innerText = this.game.score.toString();
-            // highScoreLabels[1].innerText = this.game.score.toString(); //todo FIGURE OUT HIGH SCORES
+            if (this.game.score > this.highScores.bestScore) {
+                this.highScores.bestScore = this.game.score;
+            }
+            highScoreLabels[1].innerText = this.highScores.bestScore.toString();
             levelLabels[1].innerText = this.game.level.toString();
             linesLabels[1].innerText = this.game.totalClearedLines.toString();
         } else if (this.game.settings.gameMode === GAME_MODES.SPRINT) {
             scoreLabels[1].innerText = Renderer.formatTime(this.game.frameCount60);
-            // highScoreLabels[1].innerText = Renderer.formatTime(this.game.frameCount60); //todo: also figure out high scores
+            highScoreLabels[1].innerText = Renderer.formatTime(this.highScores.bestTime);
             levelLabels[1].innerText = this.game.level.toString();
-            remainingLabels[1].innerText = (SPRINT_LINES - this.game.totalClearedLines).toString();
+            let remaining = SPRINT_LINES - this.game.totalClearedLines;
+            if (remaining < 0) remaining = 0;
+            remainingLabels[1].innerText = remaining.toString();
             linesLabels[1].innerText = this.game.totalClearedLines.toString();
         } else if (this.game.settings.gameMode === GAME_MODES.ULTRA) {
             scoreLabels[1].innerText = this.game.score.toString();
-            // highScoreLabels[1].innerText = this.game.score.toString(); //todo ditto
+            highScoreLabels[1].innerText = this.highScores.bestScore.toString();
             levelLabels[1].innerText = this.game.level.toString();
-            remainingLabels[1].innerText = Renderer.formatTime(ULTRA_FRAMES_60 - this.game.frameCount60);
+            let remaining = ULTRA_FRAMES_60 - this.game.frameCount60;
+            if (remaining < 0) remaining = 0;
+            remainingLabels[1].innerText = Renderer.formatTime(remaining);
             linesLabels[1].innerText = this.game.totalClearedLines.toString();
         }
 
@@ -168,6 +180,9 @@ export class Renderer {
     }
 
     static formatTime(frames) {
+        if (frames === Infinity) {
+            frames = 0;
+        }
         return (frames * FPS_60_MS / 1000).toFixed(4); //todo: improve via seconds and minutes
     }
 }

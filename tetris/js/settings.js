@@ -1,5 +1,5 @@
 import { audioManager } from "./audioManager.js";
-import { STANDARD_GRAVITY, TGM_LIKE_GRAVITY } from "./gravity.js";
+import { STANDARD_GRAVITY, TGM2_LIKE_GRAVITY } from "./gravity.js";
 import { BAG_MODES } from "./piece.js";
 
 const overlay = document.getElementById('overlay');
@@ -12,6 +12,12 @@ export const GAME_MODES = {
     ULTRA: 'ultra',
 }
 
+export const GAME_MODE_IS_INFINITE = {
+    [GAME_MODES.MARATHON]: true,
+    [GAME_MODES.SPRINT]: false,
+    [GAME_MODES.ULTRA]: false,
+}
+
 export const CLEAR_MODES = {
     GUIDELINE: 'guideline',
     CLASSIC: 'classic',
@@ -19,7 +25,7 @@ export const CLEAR_MODES = {
 
 export const GRAVITY_PRESET_MAP = {
     'standard': STANDARD_GRAVITY,
-    'tgm': TGM_LIKE_GRAVITY,
+    'tgm2': TGM2_LIKE_GRAVITY,
 }
 
 export class SettingsManager {
@@ -98,7 +104,7 @@ export const DEFAULT_SETTINGS = new SettingsManager();
 export const TGM_LIKE_SETTINGS = new SettingsManager(
     GAME_MODES.MARATHON,
     CLEAR_MODES.GUIDELINE,
-    TGM_LIKE_GRAVITY,
+    TGM2_LIKE_GRAVITY,
     1,
     true,
     true,
